@@ -44,6 +44,8 @@ const DETECTION_PATTERNS: PatternConfig[] = [
   {
     type: 'address',
     patterns: [
+      // 台灣完整地址：XX市XX區XX路XX巷XX弄XX號
+      /[\u4e00-\u9fa5]{2,3}[市縣][\u4e00-\u9fa5]{1,4}[區鄉鎮市][\u4e00-\u9fa5]{1,20}[路街道]\d{1,5}巷\d{1,5}弄\d{1,5}號/g,
       // 台灣地址：XX市XX區XX路XX號
       /[\u4e00-\u9fa5]{2,3}[市縣][\u4e00-\u9fa5]{1,4}[區鄉鎮市][\u4e00-\u9fa5]{1,20}[路街道巷弄]\d{1,5}[號樓之\-\d]*/g,
       // 簡化地址：XX路XX號
@@ -103,7 +105,7 @@ const DETECTION_PATTERNS: PatternConfig[] = [
       /(?:NT\$|\$|USD|TWD)\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?/g,
       // 中文金額：1,234元
       /\d{1,3}(?:,\d{3})*\s?(?:元|萬|億)/g,
-      // 連續數字（4位以上）
+      // 連續數字（4位以上，避免誤判等級、數量等小數字）
       /\b\d{4,}\b/g,
     ],
   },

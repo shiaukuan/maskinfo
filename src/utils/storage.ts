@@ -4,20 +4,19 @@ import { DEFAULT_PROCESS_TYPES } from '../types';
 const SETTINGS_KEY = 'maskinfo_settings';
 const SELECTED_TEXT_KEY = 'maskinfo_selected_text';
 
-const DEFAULT_SETTINGS: Settings = {
-  processTypes: [...DEFAULT_PROCESS_TYPES], // 預設處理姓名、電話、地址、Email（數值不處理）
-};
-
 /**
  * 讀取設定
  */
 export async function getSettings(): Promise<Settings> {
   return new Promise((resolve) => {
     chrome.storage.local.get([SETTINGS_KEY], (result) => {
-      if (result[SETTINGS_KEY]) {
-        resolve(result[SETTINGS_KEY] as Settings);
+      const saved = result[SETTINGS_KEY];
+      // 確保 processTypes 存在（處理舊版設定格式）
+      if (saved && Array.isArray(saved.processTypes)) {
+        resolve(saved as Settings);
       } else {
-        resolve(DEFAULT_SETTINGS);
+        // 舊版或無設定，使用預設值
+        resolve({ processTypes: [...DEFAULT_PROCESS_TYPES] });
       }
     });
   });

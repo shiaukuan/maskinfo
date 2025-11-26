@@ -15,7 +15,10 @@ export default function App() {
     const init = async () => {
       // 載入設定
       const savedSettings = await getSettings();
-      setSettings(savedSettings);
+      // 確保 processTypes 存在
+      const processTypes = savedSettings.processTypes || [...DEFAULT_PROCESS_TYPES];
+      const validSettings = { processTypes };
+      setSettings(validSettings);
 
       // 嘗試取得選取的文字
       chrome.runtime.sendMessage({ type: 'GET_SELECTED_TEXT' }, (response) => {
@@ -23,7 +26,7 @@ export default function App() {
           const processed = processText(response.text);
           // 套用設定：打勾的類型要處理（隱碼），所以 visible = false
           processed.matches.forEach((match: SensitiveMatch) => {
-            match.visible = !savedSettings.processTypes.includes(match.type);
+            match.visible = !processTypes.includes(match.type);
           });
           setResult(processed);
         }
@@ -35,9 +38,10 @@ export default function App() {
 
   // 切換類型處理狀態（打勾 = 處理/隱碼）
   const toggleType = useCallback(async (type: SensitiveType) => {
-    const newProcessTypes = settings.processTypes.includes(type)
-      ? settings.processTypes.filter((t) => t !== type)
-      : [...settings.processTypes, type];
+    const currentTypes = settings.processTypes || [];
+    const newProcessTypes = currentTypes.includes(type)
+      ? currentTypes.filter((t) => t !== type)
+      : [...currentTypes, type];
 
     const newSettings = { ...settings, processTypes: newProcessTypes };
     setSettings(newSettings);
@@ -59,9 +63,11 @@ export default function App() {
     return rebuildText(result.original, result.matches);
   }, [result]);
 
-  // 複製到剪貼簿
+  // 複製到剪貼簿（確保 Windows 換行符格式，Excel 相容）
   const copyToClipboard = useCallback(async () => {
-    const text = getDisplayText();
+    let text = getDisplayText();
+    // 統一換行符為 \r\n（Windows/Excel 格式）
+    text = text.replace(/\r?\n/g, '\r\n');
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -71,9 +77,10 @@ export default function App() {
   const handleProcess = useCallback(() => {
     if (!inputText.trim()) return;
     const processed = processText(inputText);
+    const currentTypes = settings.processTypes || [];
     // 套用設定：打勾的類型要處理（隱碼），所以 visible = false
     processed.matches.forEach((match: SensitiveMatch) => {
-      match.visible = !settings.processTypes.includes(match.type);
+      match.visible = !currentTypes.includes(match.type);
     });
     setResult(processed);
   }, [inputText, settings.processTypes]);
@@ -131,7 +138,7 @@ export default function App() {
               <label key={type} className="toggle-item">
                 <input
                   type="checkbox"
-                  checked={settings.processTypes.includes(type)}
+                  checked={(settings.processTypes || []).includes(type)}
                   onChange={() => toggleType(type)}
                 />
                 <span className="toggle-label">
