@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "MaskInfo - 敏感資訊隱碼工具",
+  "version": "1.0.0",
+  "description": "自動偵測並隱碼處理文字中的敏感資訊（姓名、電話、地址、Email）",
+  "permissions": ["contextMenus", "storage", "activeTab"],
+  "action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  }
+}
