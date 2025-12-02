@@ -30,3 +30,9 @@ export const SENSITIVE_TYPE_LABELS: Record<SensitiveType, string> = {
   email: 'Email',
   number: '數值',
 };
+
+export interface FileProcessResult {
+  originalName: string;
+  processedBlob: Blob;
+  stats: Record<SensitiveType, number>;
+}
